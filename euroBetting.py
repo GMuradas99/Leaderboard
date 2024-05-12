@@ -4,20 +4,21 @@ import random
 from time import sleep, time
 
 from Classes.leaderboard import Leaderboard, Row
-from Classes.apiInteraction import googleSheetsAPI
+from Classes.apiInteraction import euroBettingAPI
 
 UPDATE_DELAY = 3                       # In seconds
 FPS = 30                       # Frames per second
-NUMBER_OF_ROWS = 10            # Number of rows in leaderboard
-GOOGLE_SHEETS_URL = 'https://docs.google.com/spreadsheets/d/13Y20gPTdVBM-RplFddVTl9CMzaVLCkp5rKupbvx52kg/edit?usp=sharing'
+NUMBER_OF_ROWS = 11           # Number of rows in leaderboard
+RESULTS = 'https://docs.google.com/spreadsheets/d/1SVcGkEek1FtdbvXDZcSPjeAuFcUZlieiy1L7joL3rDM/edit?usp=sharing'
+BETS = 'https://docs.google.com/spreadsheets/d/1oOMDQ_hA4ksDpszbuaXXEFXkhANo4s_IailTPYWRsAw/edit?usp=sharing'
 
 # Initializing 
 pygame.init()
-screen = pygame.display.set_mode((1000,600))
+screen = pygame.display.set_mode((1500,650))
 # screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
 
 screenWidth = pygame.display.Info().current_w
-screenHeight = pygame.display.Info().current_h
+screenHeight = pygame.display.Info().current_h  
 
 offsetW = 230
 offsetH = 30
@@ -25,7 +26,7 @@ offsetH = 30
 lead = Leaderboard(screen, screenWidth - offsetW*2, screenHeight - offsetH*2, offsetW, offsetH, NUMBER_OF_ROWS)
 
 # Setting up API
-gs = googleSheetsAPI(GOOGLE_SHEETS_URL)
+gs = euroBettingAPI(RESULTS, BETS)
 
 # Adding participants from API
 participants = gs.getParticipants()

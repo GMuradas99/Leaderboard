@@ -3,6 +3,38 @@ import json
 import requests
 import pandas as pd
 
+class euroBettingAPI:
+    def __init__(self, results: str, bets: str) -> None:
+        pattern = r'https://docs\.google\.com/spreadsheets/d/([a-zA-Z0-9-_]+)(/edit#gid=(\d+)|/edit.*)?'
+        replacement = lambda m: f'https://docs.google.com/spreadsheets/d/{m.group(1)}/export?' + (f'gid={m.group(3)}&' if m.group(3) else '') + 'format=csv'
+
+        # Replace using regex
+        self.results = re.sub(pattern, replacement, results)
+        self.bets = re.sub(pattern, replacement, bets)
+
+    def resultsDF(self):
+        return pd.read_csv(self.results)
+    
+    def resultsDict(self):
+        return self.resultsDF().set_index('Country')['Score'].to_dict()
+    
+    def betsDF(self):
+        return pd.read_csv(self.bets)
+    
+    def getParticipants(self) -> dict:
+        """Returns a dictionary with the id of the participants as keys for all participants
+        """
+
+        multipliers = [1,0.8,0.6,0.4,0.2]
+        scores = self.resultsDict()
+
+        results = {}
+        for i,row in self.betsDF().iterrows():
+            score = int(scores[row['1']]*multipliers[0] + scores[row['2']]*multipliers[1] + scores[row['3']]*multipliers[2] + scores[row['4']]*multipliers[3] + scores[row['5']]*multipliers[4])
+            results[i] = {'player_alias': row['Name'], 'player_score': score}
+
+        return results
+
 class googleSheetsAPI:
     def __init__(self, url: str) -> None:
         # Regular expression to match and capture the necessary part of the URL
