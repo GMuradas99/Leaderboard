@@ -16,13 +16,18 @@ class leaderboardWindow:
                  font_path: str = None,
                  background_color: tuple = (56,18,114),
                  row_color: tuple = (186, 154, 218),
+                 no_frame = False
                  ) -> None:
         # Initializing 
         pygame.init()
+        pygame.display.set_caption('GMO Leaderboard')
         if window_resolution is None:
             self.screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
         else:
-            self.screen = pygame.display.set_mode(window_resolution)
+            if no_frame:
+                self.screen = pygame.display.set_mode(window_resolution, pygame.NOFRAME)
+            else:
+                self.screen = pygame.display.set_mode(window_resolution)
 
         # Getting screen resolution
         self.screenWidth = pygame.display.Info().current_w
