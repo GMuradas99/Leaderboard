@@ -3,7 +3,18 @@ import json
 import requests
 import pandas as pd
 
-class euroBettingAPI:
+from abc import ABC, abstractmethod
+
+class API(ABC):
+    @abstractmethod
+    def getParticipants(self):
+        pass
+
+class euroBettingAPI(API):
+    """
+    This class is used to interact with the Euro Betting API. It is used to get the participants of the Euro Betting game. 
+    Need 2 google sheet links, one with the people and countries they bet for, another for the countries and their scores.
+    """
     def __init__(self, results: str, bets: str) -> None:
         pattern = r'https://docs\.google\.com/spreadsheets/d/([a-zA-Z0-9-_]+)(/edit#gid=(\d+)|/edit.*)?'
         replacement = lambda m: f'https://docs.google.com/spreadsheets/d/{m.group(1)}/export?' + (f'gid={m.group(3)}&' if m.group(3) else '') + 'format=csv'
@@ -35,7 +46,7 @@ class euroBettingAPI:
 
         return results
 
-class googleSheetsAPI:
+class googleSheetsAPI(API):
     def __init__(self, url: str) -> None:
         # Regular expression to match and capture the necessary part of the URL
         pattern = r'https://docs\.google\.com/spreadsheets/d/([a-zA-Z0-9-_]+)(/edit#gid=(\d+)|/edit.*)?'
@@ -60,7 +71,7 @@ class googleSheetsAPI:
 
         return results
 
-class ScienceDayAPI:
+class ScienceDayAPI(API):
     def __init__(self, url: str) -> None:
         self.url = url
         self.participants = self.getParticipants()

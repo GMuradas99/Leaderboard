@@ -3,7 +3,7 @@ import pygame
 from random import choice
 
 class Row:
-    def __init__(self, score, name, screen, width, height, offsetX, offsetY, y, color):
+    def __init__(self, score, name, screen, width, height, offsetX, offsetY, y, color, fontPath = None):
         self.width = width
         self.height = height
         self.score = score
@@ -19,7 +19,9 @@ class Row:
         self.moving = False
 
         self.separation = 5
-        self.font = pygame.font.Font('fonts/Montserrat-ExtraBold.ttf', self.height-int(self.height*0.25))
+
+        # Setting font
+        self.font = pygame.font.Font(fontPath, self.height-int(self.height*0.25))
 
     def move(self, newY, frames):
         self.moving = True
@@ -47,10 +49,10 @@ class Row:
         # Writing name
         self.screen.blit(self.font.render(str(self.name), True, (255,255,255)), (self.offsetX + 15, self.offsetY+self.y))
         # Writing score
-        self.screen.blit(self.font.render(str(self.score), True, (255,255,255)), (self.offsetX + self.width - 100, self.offsetY+self.y))
+        self.screen.blit(self.font.render(str(self.score), True, (255,255,255)), (self.offsetX + self.width - 200, self.offsetY+self.y))
 
 class Leaderboard:
-    def __init__(self, screen, width, height, offsetX, offsetY, numOfRows):
+    def __init__(self, screen, width, height, offsetX, offsetY, numOfRows, rowColor: tuple = (186, 154, 218),fontPath = None):
         self.screen = screen
         self.width = width
         self.height = height
@@ -63,6 +65,9 @@ class Leaderboard:
         self.rows = []
         self.rowHeight = height//(numOfRows)
         self.lastAdded = None
+
+        self.rowColor = rowColor
+        self.fontPath = fontPath
     
     def __repr__(self):  
         return str(self.score)
@@ -70,9 +75,7 @@ class Leaderboard:
     def addRow(self, score, name, color = None):
         """Add a new row to the leaderboard"""
         # color = (randint(0,255), randint(0,255), randint(0,255))
-        if color is None:
-            color = (186, 154, 218)
-        row = Row(score, name, self.screen, self.width, self.rowHeight, self.offsetX, self.offsetY, self.height, color)
+        row = Row(score, name, self.screen, self.width, self.rowHeight, self.offsetX, self.offsetY, self.height, self.rowColor, self.fontPath)
         self.rows.append(row)
         self.lastAdded = row
 

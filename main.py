@@ -1,91 +1,14 @@
-import pygame
-import random
+from classes.window import leaderboardWindow
+from classes.apiInteraction import euroBettingAPI
 
-from time import sleep, time
-
-from Classes.leaderboard import Leaderboard, Row
-from Classes.apiInteraction import googleSheetsAPI
-
-UPDATE_DELAY = 3                       # In seconds
+UPDATE_DELAY = 3               # In seconds
 FPS = 30                       # Frames per second
 NUMBER_OF_ROWS = 10            # Number of rows in leaderboard
-GOOGLE_SHEETS_URL = 'https://docs.google.com/spreadsheets/d/13Y20gPTdVBM-RplFddVTl9CMzaVLCkp5rKupbvx52kg/edit?usp=sharing'
+RESULTS = 'https://docs.google.com/spreadsheets/d/1SVcGkEek1FtdbvXDZcSPjeAuFcUZlieiy1L7joL3rDM/edit?usp=sharing'
+BETS = 'https://docs.google.com/spreadsheets/d/1oOMDQ_hA4ksDpszbuaXXEFXkhANo4s_IailTPYWRsAw/edit?usp=sharing'
 
-# Initializing 
-pygame.init()
-screen = pygame.display.set_mode((1000,600))
-# screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
+api = euroBettingAPI(RESULTS, BETS)
 
-screenWidth = pygame.display.Info().current_w
-screenHeight = pygame.display.Info().current_h
+leaderboard = leaderboardWindow(NUMBER_OF_ROWS, api, offset_width=100, window_resolution=(1500,650), font_path='fonts/Montserrat-ExtraBold.ttf')
 
-offsetW = 230
-offsetH = 30
-
-lead = Leaderboard(screen, screenWidth - offsetW*2, screenHeight - offsetH*2, offsetW, offsetH, NUMBER_OF_ROWS)
-
-# Setting up API
-gs = googleSheetsAPI(GOOGLE_SHEETS_URL)
-
-# Adding participants from API
-participants = gs.getParticipants()
-for participant in participants:
-    lead.addRow(participants[participant]['player_score'], participants[participant]['player_alias'])
-
-lead.orderRows()
-
-# Main loop
-run = True
-startTime = time()
-while run:
-    #Clearing previous frame
-    screen.fill((56,18,114))
-
-    # Drawing
-    lead.drawLeaderBoard()
-
-    # Event Handler
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            run = False
-        # Key is pressed
-        if event.type == pygame.KEYDOWN:  
-            if event.key == pygame.K_u:
-                lead.orderRows()
-            if event.key == pygame.K_a:
-                randScore = random.randint(0,100)
-                print('Adding',randScore)
-                lead.addRow(randScore, 'temp')
-                lead.orderRows()
-            if event.key == pygame.K_d:
-                print("Updating row")
-                lead.updateRow("Gonzalo", 4)
-                lead.orderRows()
-            if event.key == pygame.K_f:
-                for row in lead.rows:
-                    print(row.score, 'old',row.y, 'new', row.newY, 'moving', row.moving, 'speed', row.speed)
-                
-            if event.key == pygame.K_q:
-                run = False
-    
-    # Time check for API updates
-    elapsedTime = time() - startTime
-    if elapsedTime > UPDATE_DELAY:
-        print('Updating')
-
-        # Getting new data
-        participantData = gs.getParticipants()
-
-        # Updating leaderboard
-        for key in list(participantData.keys()):
-            lead.updateRow(participantData[key]['player_alias'], participantData[key]['player_score'], increment=False)
-
-        startTime = time()
-        lead.orderRows()
-
-    # Updating
-    pygame.display.update()
-
-    sleep(1/FPS)
-
-pygame.quit()
+leaderboard.mainLoop(API_update_delay=UPDATE_DELAY, fps=FPS)
