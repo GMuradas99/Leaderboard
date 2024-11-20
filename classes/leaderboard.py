@@ -133,9 +133,25 @@ class Leaderboard:
             self.rows = filteredRows
 
     def updateRow(self, name, score, increment=True):
+        """
+        Updates the score of a row with the given name. If the row does not exist, it adds a new row.
+        Parameters:
+        name (str): The name of the row to update.
+        score (int): The score to update or increment.
+        increment (bool): If True, increments the score by the given value. If False, sets the score to the given value. Default is True.
+        Returns:
+        None
+        """
+        updated = False
         for row in self.rows:
             if row.name == name:
                 if increment:
                     row.score += score
                 else:
                     row.score = score
+                updated = True
+        
+        if not updated:
+            self.addRow(score, name)
+                    
+
