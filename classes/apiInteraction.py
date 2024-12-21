@@ -47,7 +47,34 @@ class euroBettingAPI(API):
         return results
 
 class googleSheetsAPI(API):
-    def __init__(self, url: str) -> None:
+    """
+    A class to interact with Google Sheets API and retrieve data in CSV format.
+    Attributes:
+        url (str): The URL of the Google Sheets document.
+        target_column (str): The name of the column containing the target data.
+        name_column (str): The name of the column containing the participant names.
+    Methods:
+        dataFrame():
+            Reads the Google Sheets data and returns it as a pandas DataFrame.
+        getParticipants() -> dict:
+            Returns a dictionary with the participant IDs as keys and their aliases and scores as values.
+    """
+    def __init__(self, url: str, name_column: str, target_column: str) -> None:
+        """
+        Initializes the instance with the provided URL, target column, and name column.
+        Args:
+            url (str): The URL of the Google Sheets document.
+            target_column (str): The name of the target column in the spreadsheet.
+            name_column (str): The name of the name column in the spreadsheet.
+        Attributes:
+            target_column (str): Stores the name of the target column.
+            name_column (str): Stores the name of the name column.
+            url (str): The modified URL for CSV export from the Google Sheets document.
+        """
+        # Saving variables
+        self.target_column = target_column
+        self.name_column = name_column
+
         # Regular expression to match and capture the necessary part of the URL
         pattern = r'https://docs\.google\.com/spreadsheets/d/([a-zA-Z0-9-_]+)(/edit#gid=(\d+)|/edit.*)?'
 
@@ -59,15 +86,19 @@ class googleSheetsAPI(API):
         self.url = re.sub(pattern, replacement, url)
 
     def dataFrame(self):
+        """
+        Reads a CSV file from the specified URL and returns it as a pandas DataFrame.
+        Returns:
+            pd.DataFrame: A DataFrame containing the data from the CSV file.
+        """
         return pd.read_csv(self.url)
     
     def getParticipants(self) -> dict:
         """Returns a dictionary with the id of the participants as keys for all participants
         """
-
         results = {}
         for i,row in self.dataFrame().iterrows():
-            results[i] = {'player_alias': row['Name'], 'player_score': row['Score']}
+            results[i] = {'player_alias': row[self.name_column], 'player_score': row[self.target_column]}
 
         return results
 

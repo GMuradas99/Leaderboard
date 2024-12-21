@@ -49,32 +49,37 @@ class Row:
         # Writing name
         self.screen.blit(self.font.render(str(self.name), True, (255,255,255)), (self.offsetX + 15, self.offsetY+self.y))
         # Writing score
-        self.screen.blit(self.font.render(str(self.score), True, (255,255,255)), (self.offsetX + self.width - 200, self.offsetY+self.y))
+        score_text = f"{self.score:.2f}" if isinstance(self.score, float) else str(self.score)
+        self.screen.blit(self.font.render(score_text, True, (255,255,255)), (self.offsetX + self.width - 200, self.offsetY+self.y))
 
 class Leaderboard:
-    def __init__(self, screen, width, height, offsetX, offsetY, numOfRows, rowColor: tuple = (186, 154, 218),fontPath = None):
+    def __init__(self, screen, width, height, offsetX, offsetY, numOfRows, rowColor: tuple = (186, 154, 218), fontPath = None, 
+                 reverse: bool = True, negative_row_color: tuple = None, podium_colors: list = None, show_last_participant: bool = False):
         self.screen = screen
         self.width = width
         self.height = height
         self.offsetX = offsetX
         self.offsetY = offsetY    
         self.numOfRows = numOfRows
+        self.reverse = reverse
 
         self.framesAnimation = 30
         self.visibleRows = []
         self.rows = []
         self.rowHeight = height//(numOfRows)
         self.lastAdded = None
+        self.show_last_participant = show_last_participant
 
         self.rowColor = rowColor
+        self.negative_row_color = negative_row_color
+        self.podium_colors = podium_colors
         self.fontPath = fontPath
     
     def __repr__(self):  
         return str(self.score)
 
-    def addRow(self, score, name, color = None):
+    def addRow(self, score, name):
         """Add a new row to the leaderboard"""
-        # color = (randint(0,255), randint(0,255), randint(0,255))
         row = Row(score, name, self.screen, self.width, self.rowHeight, self.offsetX, self.offsetY, self.height, self.rowColor, self.fontPath)
         self.rows.append(row)
         self.lastAdded = row
@@ -82,32 +87,34 @@ class Leaderboard:
     def drawLeaderBoard(self):
         """Draw the leaderboard on the screen"""
         for i,row in enumerate(self.visibleRows):
-            if i == 0:
-                row.drawRow(color=(215,180,0))
-            elif i == 1:
-                row.drawRow(color=(192,192,192))
-            elif i == 2:
-                row.drawRow(color=(205,127,50))
-            else:
-                row.drawRow()
+            # Default color
+            row.drawRow()
+
+            # Negative row color
+            if row.score < 0 and self.negative_row_color is not None:
+                row.drawRow(color=self.negative_row_color)
+
+            # First second and third
+            if self.podium_colors is not None and i < len(self.podium_colors):
+                row.drawRow(color=self.podium_colors[i])                
         
-        # if self.lastAdded is not None:
-        #     # Drawing last participant
-        #     pygame.draw.rect(self.screen, (255,255,255), 
-        #                      pygame.Rect((self.offsetX, self.offsetY+(self.numOfRows+1)*self.rowHeight, self.width, self.rowHeight-5)), 
-        #                      border_radius=8)
-        #     self.screen.blit(self.lastAdded.font.render(str("Last participant: "+self.lastAdded.name), 
-        #                                                 False, 
-        #                                                 (0,0,0)), 
-        #                                                 (self.offsetX + 5, self.offsetY+(self.numOfRows+1)*self.rowHeight))
-        #     self.screen.blit(self.lastAdded.font.render(str("Score: "+str(self.lastAdded.score)),
-        #                                                 True, 
-        #                                                 (0,0,0)), 
-        #                                                 (self.offsetX + self.width - 150, self.offsetY+(self.numOfRows+1)*self.rowHeight))
+        if self.show_last_participant and self.lastAdded is not None:
+            # Drawing last participant
+            pygame.draw.rect(self.screen, (255,255,255), 
+                             pygame.Rect((self.offsetX, self.offsetY+(self.numOfRows+1)*self.rowHeight, self.width, self.rowHeight-5)), 
+                             border_radius=8)
+            self.screen.blit(self.lastAdded.font.render(str("Last participant: "+self.lastAdded.name), 
+                                                        False, 
+                                                        (0,0,0)), 
+                                                        (self.offsetX + 5, self.offsetY+(self.numOfRows+1)*self.rowHeight))
+            self.screen.blit(self.lastAdded.font.render(str("Score: "+str(self.lastAdded.score)),
+                                                        True, 
+                                                        (0,0,0)), 
+                                                        (self.offsetX + self.width - 150, self.offsetY+(self.numOfRows+1)*self.rowHeight))
 
 
     def orderRows(self):  
-        sortedRows = sorted(self.rows, key = lambda x: x.score, reverse=True)
+        sortedRows = sorted(self.rows, key = lambda x: x.score, reverse = self.reverse)
         self.visibleRows = sortedRows[:self.numOfRows].copy()
 
         for i,row in enumerate(self.visibleRows):

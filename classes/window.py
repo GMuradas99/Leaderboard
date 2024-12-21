@@ -13,10 +13,14 @@ class leaderboardWindow:
                  offset_width: int = 230,
                  offset_height: int = 30,
                  window_resolution: tuple = None,
+                 reverse: bool = True,
                  font_path: str = None,
                  background_color: tuple = (56,18,114),
                  row_color: tuple = (186, 154, 218),
-                 no_frame = False
+                 negative_row_color: tuple = None,
+                 podium_colors: list = [(215,180,0), (192,192,192), (205,127,50)],
+                 show_last_participant: bool = False,
+                 no_frame = False,
                  ) -> None:
         # Initializing 
         pygame.init()
@@ -38,7 +42,9 @@ class leaderboardWindow:
         
         self.background_color = background_color
 
-        self.lead = Leaderboard(self.screen, self.screenWidth - self.offsetW*2, self.screenHeight - self.offsetH*2, self.offsetW, self.offsetH, number_of_rows, fontPath=font_path, rowColor=row_color)
+        self.lead = Leaderboard(self.screen, self.screenWidth - self.offsetW*2, self.screenHeight - self.offsetH*2, self.offsetW, self.offsetH, 
+                                number_of_rows, fontPath=font_path, reverse=reverse, rowColor=row_color, negative_row_color=negative_row_color, 
+                                podium_colors=podium_colors, show_last_participant=show_last_participant)
 
         self.api = api
 
