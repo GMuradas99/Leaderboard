@@ -19,7 +19,7 @@ class leaderboardWindow:
                  row_color: tuple = (186, 154, 218),
                  negative_row_color: tuple = None,
                  podium_colors: list = [(215,180,0), (192,192,192), (205,127,50)],
-                 show_last_participant: bool = False,
+                 custom_cell: bool = False,
                  no_frame = False,
                  ) -> None:
         # Initializing 
@@ -44,7 +44,7 @@ class leaderboardWindow:
 
         self.lead = Leaderboard(self.screen, self.screenWidth - self.offsetW*2, self.screenHeight - self.offsetH*2, self.offsetW, self.offsetH, 
                                 number_of_rows, fontPath=font_path, reverse=reverse, rowColor=row_color, negative_row_color=negative_row_color, 
-                                podium_colors=podium_colors, show_last_participant=show_last_participant)
+                                podium_colors=podium_colors, custom_cell=custom_cell)
 
         self.api = api
 
@@ -59,11 +59,15 @@ class leaderboardWindow:
         run = True
         startTime = time()
         while run:
+            # Update API?
+            elapsedTime = time() - startTime
+            update_api = elapsedTime > API_update_delay
+
             #Clearing previous frame
             self.screen.fill(self.background_color)
 
             # Drawing
-            self.lead.drawLeaderBoard()
+            self.lead.drawLeaderBoard(update_api)
 
             # Event Handler
             for event in pygame.event.get():
@@ -76,8 +80,7 @@ class leaderboardWindow:
                         run = False
             
             # Time check for API updates
-            elapsedTime = time() - startTime
-            if elapsedTime > API_update_delay:
+            if update_api:
 
                 # Getting new data
                 participantData = self.api.getParticipants()

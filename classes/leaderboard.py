@@ -54,13 +54,14 @@ class Row:
 
 class Leaderboard:
     def __init__(self, screen, width, height, offsetX, offsetY, numOfRows, rowColor: tuple = (186, 154, 218), fontPath = None, 
-                 reverse: bool = True, negative_row_color: tuple = None, podium_colors: list = None, show_last_participant: bool = False):
+                 reverse: bool = True, negative_row_color: tuple = None, podium_colors: list = None, custom_cell = None):
         self.screen = screen
         self.width = width
         self.height = height
         self.offsetX = offsetX
         self.offsetY = offsetY    
         self.numOfRows = numOfRows
+        if custom_cell is not None: self.numOfRows -= 1
         self.reverse = reverse
 
         self.framesAnimation = 30
@@ -68,7 +69,7 @@ class Leaderboard:
         self.rows = []
         self.rowHeight = height//(numOfRows)
         self.lastAdded = None
-        self.show_last_participant = show_last_participant
+        self.custom_cell = custom_cell
 
         self.rowColor = rowColor
         self.negative_row_color = negative_row_color
@@ -84,7 +85,7 @@ class Leaderboard:
         self.rows.append(row)
         self.lastAdded = row
 
-    def drawLeaderBoard(self):
+    def drawLeaderBoard(self, updateApi = False):
         """Draw the leaderboard on the screen"""
         for i,row in enumerate(self.visibleRows):
             # Default color
@@ -98,19 +99,22 @@ class Leaderboard:
             if self.podium_colors is not None and i < len(self.podium_colors):
                 row.drawRow(color=self.podium_colors[i])                
         
-        if self.show_last_participant and self.lastAdded is not None:
-            # Drawing last participant
-            pygame.draw.rect(self.screen, (255,255,255), 
-                             pygame.Rect((self.offsetX, self.offsetY+(self.numOfRows+1)*self.rowHeight, self.width, self.rowHeight-5)), 
-                             border_radius=8)
-            self.screen.blit(self.lastAdded.font.render(str("Last participant: "+self.lastAdded.name), 
-                                                        False, 
-                                                        (0,0,0)), 
-                                                        (self.offsetX + 5, self.offsetY+(self.numOfRows+1)*self.rowHeight))
-            self.screen.blit(self.lastAdded.font.render(str("Score: "+str(self.lastAdded.score)),
-                                                        True, 
-                                                        (0,0,0)), 
-                                                        (self.offsetX + self.width - 150, self.offsetY+(self.numOfRows+1)*self.rowHeight))
+        if self.custom_cell is not None:
+
+            self.custom_cell.drawCell(self.screen, self.offsetX, self.offsetY+(self.numOfRows)*self.rowHeight, self.width, self.rowHeight-5, updateApi)
+
+            # # Drawing last participant
+            # pygame.draw.rect(self.screen, (255,255,255), 
+            #                  pygame.Rect((self.offsetX, self.offsetY+(self.numOfRows+1)*self.rowHeight, self.width, self.rowHeight-5)), 
+            #                  border_radius=8)
+            # self.screen.blit(self.lastAdded.font.render(str("Last participant: "+self.lastAdded.name), 
+            #                                             False, 
+            #                                             (0,0,0)), 
+            #                                             (self.offsetX + 5, self.offsetY+(self.numOfRows+1)*self.rowHeight))
+            # self.screen.blit(self.lastAdded.font.render(str("Score: "+str(self.lastAdded.score)),
+            #                                             True, 
+            #                                             (0,0,0)), 
+            #                                             (self.offsetX + self.width - 150, self.offsetY+(self.numOfRows+1)*self.rowHeight))
 
 
     def orderRows(self):  
